@@ -189,9 +189,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utility\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\FMLib\FMLib.csproj">
       <Project>{3c072965-ba16-46bc-b037-28bca02a96fd}</Project>
