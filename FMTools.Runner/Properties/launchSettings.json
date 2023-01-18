@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FMTools.Runner": {
+      "commandName": "Project",
+      "commandLineArgs": "-o .\\options.json"
+    }
+  }
+}

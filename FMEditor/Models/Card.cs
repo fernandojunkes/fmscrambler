@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FMTools.GameData;
+using System.Collections.Generic;
 
 namespace FMTools.Models
 {
@@ -15,12 +16,12 @@ namespace FMTools.Models
         /// <summary>
         /// Name of the Card as String
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Description of the Card as String
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Attack Value of the Card as Integer
@@ -70,11 +71,27 @@ namespace FMTools.Models
         /// <summary>
         /// Ritual of the Card as Ritual
         /// </summary>
-        public Ritual Rituals { get; set; }
+        public Ritual? Rituals { get; set; }
 
         /// <summary>
         /// Starchip information on the card Cost/Password
         /// </summary>
-        public Starchips Starchip { get; set; }
+        public Starchips? Starchip { get; set; }
+
+        //Todo: Remove Model.Card
+        internal static Card From(CardData card, int id)
+        {
+            return new Card
+            {
+                Id = id,
+                Attack = (int)card.Attack,
+                Defense = (int)card.Defense,
+                GuardianStar1 = (int)card.GuardianStar1,
+                GuardianStar2 = (int)card.GuardianStar2,
+                Type = (int)card.Type,
+                Attribute = (int)card.Attribute,
+                Level = (int)card.Level,
+            };
+        }
     }
 }

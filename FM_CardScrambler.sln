@@ -14,7 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.travis.yml = .travis.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMTools", "FMEditor\FMTools.csproj", "{6C3890F1-4C4C-4F24-BF3A-DCF5879B55E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FMTools", "FMEditor\FMTools.csproj", "{6C3890F1-4C4C-4F24-BF3A-DCF5879B55E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMTools.Runner", "FMTools.Runner\FMTools.Runner.csproj", "{B8F37ED3-13D6-444E-865D-CDC6F49378A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,14 @@ Global
 		{6C3890F1-4C4C-4F24-BF3A-DCF5879B55E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6C3890F1-4C4C-4F24-BF3A-DCF5879B55E4}.Release|x64.ActiveCfg = Release|Any CPU
 		{6C3890F1-4C4C-4F24-BF3A-DCF5879B55E4}.Release|x64.Build.0 = Release|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Debug|x64.Build.0 = Debug|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Release|x64.ActiveCfg = Release|Any CPU
+		{B8F37ED3-13D6-444E-865D-CDC6F49378A7}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

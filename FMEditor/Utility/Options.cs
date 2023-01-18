@@ -4,6 +4,7 @@ namespace FMTools.Utility
 {
     public class Options
     {
+        public int? Seed { get; set; } = null;
         /// <summary>
         /// Options (true / false)
         /// </summary>
@@ -84,5 +85,8 @@ namespace FMTools.Utility
         public string IsoPath { get; set; } = string.Empty;
 
         public string RandomizerFileName { get; set; } = string.Empty;
+
+        public int MinDropRate { get; set; } = 0;
+        public int MaxDropRate { get; set; } = 0;
     }
 }

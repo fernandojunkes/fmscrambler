@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using FMTools.Models;
 
 namespace FMTools.Utility
@@ -126,7 +128,7 @@ namespace FMTools.Utility
         /// </summary>
         public static Dictionary<char, byte> RDict = new Dictionary<char, byte>();
 
-        public void SetOptions(Options options)
+        public static void SetOptions(Options options)
         {
             RandomFusions = options.RandomFusions;
             GlitchFusions = options.GlitchFusions;
@@ -143,6 +145,48 @@ namespace FMTools.Utility
             RandomAtkdef = options.RandomAtkdef;
             Spoiler = options.Spoiler;
 
+            CardCount = GlitchFusions ? 1400 : 722;
+            IsoPath = options.IsoPath;
+
+        }
+
+        public static void InitCharTable()
+        {
+            var table_path = @"./CharacterTable.txt";
+
+            if (!File.Exists(table_path))
+            {
+                throw new Exception("CharacterTable.txt not found! Provide it!");
+            }
+
+            StringReader strReader = new StringReader(File.ReadAllText(table_path));
+
+            string input;
+
+            while ((input = strReader.ReadLine()) != null)
+            {
+                Match match = Regex.Match(input, "^([A-Fa-f0-9]{2})\\=(.*)$");
+
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                char k1 = Convert.ToChar(match.Groups[2].ToString());
+                byte k2 = (byte)int.Parse(match.Groups[1].ToString(), NumberStyles.HexNumber);
+
+                Static.Dict.Add(k2, k1);
+
+                if (!Static.RDict.ContainsKey(k1))
+                {
+                    Static.RDict.Add(k1, k2);
+                }
+            }
+            //There should be 85 entries otherwise file got corrupted, misread or user manually provided a bad file
+            if (Static.Dict.Values.Count != 85)
+            {
+                throw new Exception("Provided CharacterTable.txt is incorrect or incomplete!");
+            }
         }
     }
 }
