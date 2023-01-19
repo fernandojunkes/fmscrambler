@@ -4,8 +4,9 @@ namespace FMTools.Utility
 {
     public class IsoLoader
     {
+        /*
         public SlugData Slug { get; set; }
-
+        */
         public IsoLoader()
         {
         }
