@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using FMTools.Models;
 using FMTools.Utility;
+using FMTools.Disc;
 
 namespace FMTools.Randomizer
 {
@@ -34,8 +35,9 @@ namespace FMTools.Randomizer
         /// </summary>
         public void LoadDataFromSlus()
         {
-            MemoryStream memStream = new MemoryStream(File.ReadAllBytes(Static.SlusPath)) { Position = 1854020L };
-            for (int i = 0; i < 722; i++)
+            var slugData = File.ReadAllBytes(Static.SlusPath);
+            MemoryStream memStream = new MemoryStream(slugData) { Position = SlugDataLocation.Cards.BasicDataStart };
+            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
             {
                 int int32 = memStream.ExtractPiece(0, 4).ExtractInt32();
                 Static.Cards[i] = new Card
@@ -50,8 +52,8 @@ namespace FMTools.Randomizer
             }
 
             // Card Level and Attribute
-            memStream.Position = 0x1C5B33L;
-            for (int i = 0; i < 722; i++)
+            memStream.Position = SlugDataLocation.Cards.LevelAndAttributeDataStart;
+            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
             {
                 byte num = memStream.ExtractPiece(0, 1)[0];
                 Static.Cards[i].Level = num & 0xF;
@@ -59,27 +61,28 @@ namespace FMTools.Randomizer
             }
 
             // Card Name
-            for (int i = 0; i < 722; i++)
+            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
             {
-                memStream.Position = 0x1C6002 + i * 2;
+                memStream.Position = SlugDataLocation.Cards.NameHeaderStart + i * 2;
                 int num = memStream.ExtractPiece(0, 2).ExtractUInt16() & ushort.MaxValue;
-                memStream.Position = 0x1C6800 + num - 0x6000;
+                memStream.Position = SlugDataLocation.Cards.NameDataStart + num;
                 Static.Cards[i].Name = memStream.GetText(Static.Dict);
             }
 
             // Card Description
-            for (int i = 0; i < 722; i++)
+            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
             {
-                memStream.Position = 0x1B0A02 + i * 2;
-                int num3 = memStream.ExtractPiece(0, 2).ExtractUInt16();
-                memStream.Position = 0x1B11F4 + (num3 - 0x9F4);
+                memStream.Position = SlugDataLocation.Cards.DescriptionHeaderStart + i * 2;
+                int offsetDescription = memStream.ExtractPiece(0, 2).ExtractUInt16();
+                memStream.Position = SlugDataLocation.Cards.DescriptionDataStart + offsetDescription;
                 Static.Cards[i].Description = memStream.GetText(Static.Dict);
             }
 
-            for (int i = 0; i < 39; i++)
+            for (int i = 0; i < GameConstants.NumberOfDuelists; i++)
             {
-                memStream.Position = 0x1C6652 + i * 2;
-                memStream.Position = 0x1C6800 + memStream.ExtractPiece(0, 2).ExtractUInt16() - 0x6000;
+                memStream.Position = SlugDataLocation.Duelists.NameHeaderStart + i * 2;
+                var offsetDuelistName = memStream.ExtractPiece(0, 2).ExtractUInt16();
+                memStream.Position = SlugDataLocation.Duelists.NameDataStart + offsetDuelistName;
                 Static.Duelist[i] = new Duelist(memStream.GetText(Static.Dict));
             }
 
@@ -96,10 +99,12 @@ namespace FMTools.Randomizer
             MemoryStream memStream = new MemoryStream(fusionStream.ExtractPiece(0, 0x10000, 0xB87800));
 
             // Card Fusions
-            for (int i = 0; i < 722; ++i)
+            for (int i = 0; i < GameConstants.NormalNumberOfCards; ++i)
             {
                 memStream.Position = 2 + i * 2;
-                memStream.Position = memStream.ExtractPiece(0, 2).ExtractUInt16() & ushort.MaxValue;
+                var fusionsOffset = memStream.ExtractPiece(0, 2).ExtractUInt16();
+                memStream.Position = fusionsOffset;
+
                 if (memStream.Position != 0L)
                 {
                     int num1 = memStream.ReadByte();
@@ -160,8 +165,8 @@ namespace FMTools.Randomizer
             memStream.Close();
 
             //Read Starchip Cost/Password pairs
-            memStream = new MemoryStream(fusionStream.ExtractPiece(0, 722 * 8, 0xFB9808));
-            for (var i = 0; i < 722; ++i)
+            memStream = new MemoryStream(fusionStream.ExtractPiece(0, GameConstants.NormalNumberOfCards * 8, 0xFB9808));
+            for (var i = 0; i < GameConstants.NormalNumberOfCards; ++i)
             {
                 Static.Cards[i].Starchip = new Starchips();
                 var cost_bytes = new byte[4];
@@ -198,7 +203,7 @@ namespace FMTools.Randomizer
         {
             if (Static.RandomFusions)
             {
-                for (int i = 0; i < 722; i++)
+                for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
                 {
                     foreach (Fusion t in Static.Cards[i].Fusions)
                     {
@@ -221,7 +226,7 @@ namespace FMTools.Randomizer
         /// <param name="maxCost"></param>
         public void RandomizeCardInfo(int minAtk = 1000, int maxAtk = 3000, int minDef = 1000, int maxDef = 3000, int minCost = 1, int maxCost = 999999)
         {
-            for (int i = 0; i < 722; i++)
+            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
             {
                 // ATK/DEF RANDOMIZING
                 if (Static.RandomAtkdef)
@@ -251,7 +256,7 @@ namespace FMTools.Randomizer
                 {
                     for (int j = 0; j < _random.Next(20); j++)
                     {
-                        int rando = _random.Next(1, 722);
+                        int rando = _random.Next(1, GameConstants.NormalNumberOfCards);
                         Static.Cards[i].Equips.Add(rando);
                     }
                 }
@@ -281,15 +286,15 @@ namespace FMTools.Randomizer
                     while (true)
                     {
                         var rate = _random.Next(minDropRate, maxDropRate);
-                        if (total_rate + rate > 2048)
+                        if (total_rate + rate > GameConstants.InGameSampleSpace)
                         {
-                            rate = 2048 - total_rate;
+                            rate = GameConstants.InGameSampleSpace - total_rate;
                         }
-                        t1.Drop.BcdPow[_random.Next(0, 722)]+= rate;
-                        t1.Drop.SaPow[_random.Next(0, 722)] += rate;
-                        t1.Drop.SaTec[_random.Next(0, 722)] += rate;
+                        t1.Drop.BcdPow[_random.Next(0, GameConstants.NormalNumberOfCards)]+= rate;
+                        t1.Drop.SaPow[_random.Next(0, GameConstants.NormalNumberOfCards)] += rate;
+                        t1.Drop.SaTec[_random.Next(0, GameConstants.NormalNumberOfCards)] += rate;
                         total_rate += rate;
-                        if (total_rate == 2048) break;
+                        if (total_rate == GameConstants.InGameSampleSpace) break;
                     }
                 }
             }
@@ -304,9 +309,9 @@ namespace FMTools.Randomizer
             {
                 foreach (Duelist t1 in Static.Duelist)
                 {
-                    for (int ix = 0; ix < 2048; ix++)
+                    for (int ix = 0; ix < GameConstants.InGameSampleSpace; ix++)
                     {
-                        t1.Deck[_random.Next(0, 722)]++;
+                        t1.Deck[_random.Next(0, GameConstants.NormalNumberOfCards)]++;
                     }
                 }
             }
@@ -405,10 +410,10 @@ namespace FMTools.Randomizer
             {
                 using (FileStream fileStreamSl = new FileStream(Static.SlusPath, FileMode.Open))
                 {
-                    fileStreamSl.Position = 0x1C4A44L;
+                    fileStreamSl.Position = SlugDataLocation.Cards.BasicDataStart;
                     using (MemoryStream memoryStream = new MemoryStream(2888))
                     {
-                        for (int i = 0; i < 722; ++i)
+                        for (int i = 0; i < GameConstants.NormalNumberOfCards; ++i)
                         {
                             int value = (Static.Cards[i].Attack / 10 & 0x1FF) | (Static.Cards[i].Defense / 10 & 0x1FF) << 9 |
                                         (Static.Cards[i].GuardianStar2 & 0xF) << 18 |
@@ -426,7 +431,7 @@ namespace FMTools.Randomizer
             {
                 using (FileStream duelistStream = new FileStream(Static.WaPath, FileMode.Open))
                 {
-                    for (int i = 0; i < 39; i++)
+                    for (int i = 0; i < GameConstants.NumberOfDuelists; i++)
                     {
                         int num = 0xE9B000 + 0x1800 * i;
 
@@ -496,7 +501,7 @@ namespace FMTools.Randomizer
                 using (FileStream starchipStream = new FileStream(Static.WaPath, FileMode.Open))
                 {
                     starchipStream.Position = 0xFB9808;
-                    for (var i = 0; i < 722; ++i)
+                    for (var i = 0; i < GameConstants.NormalNumberOfCards; ++i)
                     {
                         var cost_arr = Static.Cards[i].Starchip.Cost.Int32ToByteArray();
                         var pass_arr = Static.Cards[i].Starchip.PasswordStr.StringToByteArray();
@@ -548,7 +553,7 @@ namespace FMTools.Randomizer
                 logStream.WriteLine("=> FUSIONS:");
                 foreach (Fusion fus in c.Fusions)
                 {
-                    logStream.WriteLine($"    => {fus.Cards1} + {fus.Cards2} = {fus.Result}         ({(fus.Cards1 > 722 ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards1).Name)} + {(fus.Cards2 > 722 ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards2).Name)} = {(fus.Result > 722 ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Result).Name)})");
+                    logStream.WriteLine($"    => {fus.Cards1} + {fus.Cards2} = {fus.Result}         ({(fus.Cards1 > GameConstants.NormalNumberOfCards ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards1).Name)} + {(fus.Cards2 > GameConstants.NormalNumberOfCards ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards2).Name)} = {(fus.Result > GameConstants.NormalNumberOfCards ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Result).Name)})");
                 }
             }
 
@@ -632,7 +637,7 @@ namespace FMTools.Randomizer
                 foreach (var p in drop_map)
                 {
                     logStream.WriteLine($"    => #{p.Key.Id} {p.Key.Name}");
-                    logStream.WriteLine($"        Rate: {p.Value}/2048");
+                    logStream.WriteLine($"        Rate: {p.Value}/{GameConstants.InGameSampleSpace}");
                 }
 
                 logStream.WriteLine();
@@ -642,7 +647,7 @@ namespace FMTools.Randomizer
                 foreach (var p in drop_map)
                 {
                     logStream.WriteLine($"    => #{p.Key.Id} {p.Key.Name}");
-                    logStream.WriteLine($"        Rate: {p.Value}/2048");
+                    logStream.WriteLine($"        Rate: {p.Value}/{GameConstants.InGameSampleSpace}");
                 }
 
                 logStream.WriteLine();
@@ -652,7 +657,7 @@ namespace FMTools.Randomizer
                 foreach (var p in drop_map)
                 {
                     logStream.WriteLine($"    => #{p.Key.Id} {p.Key.Name}");
-                    logStream.WriteLine($"        Rate: {p.Value}/2048");
+                    logStream.WriteLine($"        Rate: {p.Value}/{GameConstants.InGameSampleSpace}");
                 }
                 logStream.WriteLine();
             }
@@ -720,7 +725,7 @@ namespace FMTools.Randomizer
                 foreach (Fusion fus in c.Fusions)
                 {
                     tmpFusions += "<tr>";
-                    tmpFusions += $"<td>{fus.Cards1}</td> <td>{(fus.Cards1 > 722 ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards1).Name)}</td> <td>{fus.Cards2}</td> <td>{(fus.Cards2 > 722 ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards2).Name)}</td> <td>{fus.Result}</td> <td>{(fus.Result > 722 ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Result).Name)}</td></tr>";
+                    tmpFusions += $"<td>{fus.Cards1}</td> <td>{(fus.Cards1 > GameConstants.NormalNumberOfCards ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards1).Name)}</td> <td>{fus.Cards2}</td> <td>{(fus.Cards2 > GameConstants.NormalNumberOfCards ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Cards2).Name)}</td> <td>{fus.Result}</td> <td>{(fus.Result > GameConstants.NormalNumberOfCards ? "Glitch!" : Static.Cards.Single(card => card.Id == fus.Result).Name)}</td></tr>";
                 }
             }
             //logStream.WriteLine("</tbody></table><br />");
