@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FMTools.Disc
+namespace FMTools.GameData
 {
     internal static class SlugDataLocation
     {

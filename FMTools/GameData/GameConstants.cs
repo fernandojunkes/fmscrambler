@@ -1,4 +1,4 @@
-﻿namespace FMTools.Disc
+﻿namespace FMTools.GameData
 {
     internal static class GameConstants
     {

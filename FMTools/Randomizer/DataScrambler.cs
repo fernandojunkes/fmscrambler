@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using FMTools.Models;
 using FMTools.Utility;
-using FMTools.Disc;
+using FMTools.GameData;
 
 namespace FMTools.Randomizer
 {
