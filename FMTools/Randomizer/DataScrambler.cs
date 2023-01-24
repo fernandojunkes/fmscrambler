@@ -49,13 +49,15 @@ namespace FMTools.Randomizer
                     GuardianStar1 = int32 >> 22 & 0xF,
                     Type = int32 >> 26 & 0x1F
                 };
+                var b = int32 >> 31;
             }
 
             // Card Level and Attribute
             memStream.Position = SlugDataLocation.Cards.LevelAndAttributeDataStart;
             for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
             {
-                byte num = memStream.ExtractPiece(0, 1)[0];
+                var singleByte = memStream.ExtractPiece(0, 1);
+                byte num = singleByte[0];
                 Static.Cards[i].Level = num & 0xF;
                 Static.Cards[i].Attribute = num >> 4 & 0xF;
             }

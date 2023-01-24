@@ -144,6 +144,8 @@ namespace FMTools.Utility
             HighId = options.HighId;
             RandomAtkdef = options.RandomAtkdef;
             Spoiler = options.Spoiler;
+            
+            RandomizerFileName = options.RandomizerFileName ?? "FM_Patched";
 
             CardCount = GlitchFusions ? 1400 : 722;
             IsoPath = options.IsoPath;
