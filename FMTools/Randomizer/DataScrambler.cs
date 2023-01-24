@@ -243,8 +243,8 @@ namespace FMTools.Randomizer
 
                 if (Static.RandomGuardianStars)
                 {
-                    Static.Cards[i].GuardianStar1 = _random.Next(1, 25);
-                    Static.Cards[i].GuardianStar2 = _random.Next(1, 25);
+                    Static.Cards[i].GuardianStar1 = _random.Next(1, 11);
+                    Static.Cards[i].GuardianStar2 = _random.Next(1, 11);
                 }
 
                 if (Static.RandomTypes)

@@ -3,5 +3,7 @@
   "MaxDropRate": 200,
   "RandomCardDrops": true,
   "IsoPath": "C:\\Users\\yonbs\\Downloads\\YGOFM Vanilla (5 Card Mod)\\YGOFM Vanilla (5 Card Mod).cue",
-  "Seed": 20230112
+  "Seed": 20230112,
+  "RandomizerFileName": "TESTE",
+  "RandomGuardianStars": true
 }
