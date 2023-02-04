@@ -33,7 +33,7 @@ namespace FMTools.Randomizer
         /// <summary>
         /// 
         /// </summary>
-        public SlugData LoadDataFromSlus()
+        public SlugData LoadDataFromSlus() //TODO: remove this from Data Scrambler, it should be a Data Reader.
         {
             var slugDataBytes = File.ReadAllBytes(Static.SlusPath);
 
@@ -83,20 +83,26 @@ namespace FMTools.Randomizer
                 }
             }
 
-            MemoryStream memStream = new MemoryStream(slugDataBytes) { };
-            for (int i = 0; i < GameConstants.NumberOfDuelists; i++)
-            {
-                memStream.Position = SlugDataLocation.Duelists.NameHeaderStart + i * 2;
-                var offsetDuelistName = memStream.ExtractPiece(0, 2).ExtractUInt16();
-                memStream.Position = SlugDataLocation.Duelists.NameDataStart + offsetDuelistName;
-                Static.Duelist[i] = new Duelist(memStream.GetText(Static.Dict));
-            }
+            var duelists = new Duelist[GameConstants.NumberOfDuelists];
 
+            using (var duelistNameHeaderStream = new MemoryStream(slugDataBytes) { Position = SlugDataLocation.Duelists.NameHeaderStart })
+            using (var duelistTextStream = new MemoryStream(slugDataBytes))
+            {
+                for (int i = 0; i < GameConstants.NumberOfDuelists; i++)
+                {
+                    var offsetDuelistName = duelistNameHeaderStream.ExtractPiece(0, 2).ExtractUInt16();
+                    duelistTextStream.Position = SlugDataLocation.Duelists.NameDataStart + offsetDuelistName;
+                    var duelistName = duelistTextStream.GetText(Static.Dict);
+                    
+                    duelists[i] = new Duelist(duelistName);
+                    
+                    slugData.AddDuelist(i, new DuelistData(duelistName));
+                }
+            }
 
             //old format compatibility.
             Static.Cards = cards;
-
-            memStream.Close();
+            Static.Duelist = duelists;
 
             return slugData;
         }
