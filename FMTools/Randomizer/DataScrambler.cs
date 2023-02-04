@@ -33,53 +33,57 @@ namespace FMTools.Randomizer
         /// <summary>
         /// 
         /// </summary>
-        public void LoadDataFromSlus()
+        public SlugData LoadDataFromSlus()
         {
-            var slugData = File.ReadAllBytes(Static.SlusPath);
-            MemoryStream memStream = new MemoryStream(slugData) { Position = SlugDataLocation.Cards.BasicDataStart };
-            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
+            var slugDataBytes = File.ReadAllBytes(Static.SlusPath);
+
+            var slugData = new SlugData();
+            //old format
+            var cards = new Card[GameConstants.NormalNumberOfCards];
+
+            using (var basicCardDataStream = new MemoryStream(slugDataBytes) { Position = SlugDataLocation.Cards.BasicDataStart })
+            using (var levelAndAttributeCardStream = new MemoryStream(slugDataBytes) { Position = SlugDataLocation.Cards.LevelAndAttributeDataStart })
+            using (var cardNameHeaderStream = new MemoryStream(slugDataBytes) { Position = SlugDataLocation.Cards.NameHeaderStart })
+            using (var cardDescriptionHeaderStream = new MemoryStream(slugDataBytes) { Position = SlugDataLocation.Cards.DescriptionHeaderStart })
+            using (var cardTextStream = new MemoryStream(slugDataBytes))
             {
-                int int32 = memStream.ExtractPiece(0, 4).ExtractInt32();
-                Static.Cards[i] = new Card
+
+                for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
                 {
-                    Id = i + 1,
-                    Attack = (int32 & 0x1FF) * 10,
-                    Defense = (int32 >> 9 & 0x1FF) * 10,
-                    GuardianStar2 = int32 >> 18 & 0xF,
-                    GuardianStar1 = int32 >> 22 & 0xF,
-                    Type = int32 >> 26 & 0x1F
-                };
-                var b = int32 >> 31;
+                    int basicCardData = basicCardDataStream.ExtractPiece(0, 4).ExtractInt32();
+                    cards[i] = new Card
+                    {
+                        Id = i + 1,
+                        Attack = (basicCardData & 0x1FF) * 10,
+                        Defense = (basicCardData >> 9 & 0x1FF) * 10,
+                        GuardianStar2 = basicCardData >> 18 & 0xF,
+                        GuardianStar1 = basicCardData >> 22 & 0xF,
+                        Type = basicCardData >> 26 & 0x1F
+                    };
+                    var b = basicCardData >> 31;
+
+                    // Card Level and Attribute
+                    var cardLevelAndAttribute = levelAndAttributeCardStream.ReadNextByte();
+                    cards[i].Level = cardLevelAndAttribute & 0xF;
+                    cards[i].Attribute = cardLevelAndAttribute >> 4 & 0xF;
+
+                    // Card Name
+                    var cardNameOffset = cardNameHeaderStream.ExtractPiece(0, 2).ExtractUInt16();
+                    cardTextStream.Position = SlugDataLocation.Cards.NameDataStart + cardNameOffset;
+                    var name = cardTextStream.GetText(Static.Dict);
+                    cards[i].Name = name;
+
+                    // Card Description
+                    var cardDescriptionOffset = cardDescriptionHeaderStream.ExtractPiece(0, 2).ExtractUInt16();
+                    cardTextStream.Position = SlugDataLocation.Cards.DescriptionDataStart + cardDescriptionOffset;
+                    var description = cardTextStream.GetText(Static.Dict);
+                    cards[i].Description = description;
+
+                    slugData.AddCard(i, new CardData(basicCardData, cardLevelAndAttribute, name, description));
+                }
             }
 
-            // Card Level and Attribute
-            memStream.Position = SlugDataLocation.Cards.LevelAndAttributeDataStart;
-            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
-            {
-                var singleByte = memStream.ExtractPiece(0, 1);
-                byte num = singleByte[0];
-                Static.Cards[i].Level = num & 0xF;
-                Static.Cards[i].Attribute = num >> 4 & 0xF;
-            }
-
-            // Card Name
-            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
-            {
-                memStream.Position = SlugDataLocation.Cards.NameHeaderStart + i * 2;
-                int num = memStream.ExtractPiece(0, 2).ExtractUInt16() & ushort.MaxValue;
-                memStream.Position = SlugDataLocation.Cards.NameDataStart + num;
-                Static.Cards[i].Name = memStream.GetText(Static.Dict);
-            }
-
-            // Card Description
-            for (int i = 0; i < GameConstants.NormalNumberOfCards; i++)
-            {
-                memStream.Position = SlugDataLocation.Cards.DescriptionHeaderStart + i * 2;
-                int offsetDescription = memStream.ExtractPiece(0, 2).ExtractUInt16();
-                memStream.Position = SlugDataLocation.Cards.DescriptionDataStart + offsetDescription;
-                Static.Cards[i].Description = memStream.GetText(Static.Dict);
-            }
-
+            MemoryStream memStream = new MemoryStream(slugDataBytes) { };
             for (int i = 0; i < GameConstants.NumberOfDuelists; i++)
             {
                 memStream.Position = SlugDataLocation.Duelists.NameHeaderStart + i * 2;
@@ -88,7 +92,13 @@ namespace FMTools.Randomizer
                 Static.Duelist[i] = new Duelist(memStream.GetText(Static.Dict));
             }
 
+
+            //old format compatibility.
+            Static.Cards = cards;
+
             memStream.Close();
+
+            return slugData;
         }
 
         /// <summary>

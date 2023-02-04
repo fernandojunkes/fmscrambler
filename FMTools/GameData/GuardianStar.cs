@@ -1,6 +1,6 @@
 ﻿namespace FMTools.GameData
 {
-    internal enum GuardianStar
+    public enum GuardianStar
     {
         Mars = 1,
         Jupiter = 2,

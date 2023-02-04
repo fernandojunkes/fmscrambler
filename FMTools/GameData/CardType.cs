@@ -1,6 +1,6 @@
 ﻿namespace FMTools.GameData
 {
-    internal enum CardType
+    public enum CardType
     {
         Dragon = 0,
         Spellcaster = 1,

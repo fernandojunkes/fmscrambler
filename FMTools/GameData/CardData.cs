@@ -2,7 +2,7 @@
 
 namespace FMTools.GameData
 {
-    internal class CardData
+    public class CardData
     {
         private enum CardBasicDataMask
         {
@@ -23,24 +23,29 @@ namespace FMTools.GameData
             Type = 26
         }
 
-        public CardData(int basicCardData, byte cardLevelAndAttribute)
+        public CardData(int basicCardData, byte cardLevelAndAttribute, string name, string description)
         {
-            Attack =                      10 * ((basicCardData & (int)CardBasicDataMask.Attack)        >> (int)CardBasicDataOffset.Attack);
-            Defense =                     10 * ((basicCardData & (int)CardBasicDataMask.Defense)       >> (int)CardBasicDataOffset.Defense);
-            SecondGuardianStar = (GuardianStar)((basicCardData & (int)CardBasicDataMask.GuardianStar2) >> (int)CardBasicDataOffset.GuardianStar2);
-            FirstGuardianStar =  (GuardianStar)((basicCardData & (int)CardBasicDataMask.GuardianStar1) >> (int)CardBasicDataOffset.GuardianStar1);
-            Type =                   (CardType)((basicCardData & (int)CardBasicDataMask.Type)          >> (int)CardBasicDataOffset.Type);
+            Attack =                  10 * ((basicCardData & (int)CardBasicDataMask.Attack)        >> (int)CardBasicDataOffset.Attack);
+            Defense =                 10 * ((basicCardData & (int)CardBasicDataMask.Defense)       >> (int)CardBasicDataOffset.Defense);
+            GuardianStar2nd =(GuardianStar)((basicCardData & (int)CardBasicDataMask.GuardianStar2) >> (int)CardBasicDataOffset.GuardianStar2);
+            GuardianStar1st =(GuardianStar)((basicCardData & (int)CardBasicDataMask.GuardianStar1) >> (int)CardBasicDataOffset.GuardianStar1);
+            Type =               (CardType)((basicCardData & (int)CardBasicDataMask.Type)          >> (int)CardBasicDataOffset.Type);
 
             Level = cardLevelAndAttribute & 0xF;
-            Attribute = cardLevelAndAttribute >> 4 & 0xF;
+            Attribute = cardLevelAndAttribute >> 4 & 0xF; // TODO: change to enum... but is it relevant?
+
+            Name = name;
+            Description = description;
         }
 
         public int Attack { get; }
         public int Defense { get; }
-        public GuardianStar SecondGuardianStar { get; }
-        public GuardianStar FirstGuardianStar { get; }
+        public GuardianStar GuardianStar2nd { get; }
+        public GuardianStar GuardianStar1st { get; }
         public CardType Type { get; }
         public int Level { get; }
         public int Attribute { get; }
+        public string Name { get; }
+        public string Description { get; }
     }
 }

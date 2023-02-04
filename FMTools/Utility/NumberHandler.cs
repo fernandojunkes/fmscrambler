@@ -85,6 +85,13 @@ namespace FMTools.Utility
             return buffer;
         }
 
+        public static byte ReadNextByte(this MemoryStream ms)
+        {
+            var read = ms.ReadByte();
+            if (read == -1) throw new EndOfStreamException();
+            return (byte)read;
+        }
+
         /// <summary>
         /// Save to File
         /// </summary>
